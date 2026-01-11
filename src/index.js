@@ -15,6 +15,15 @@
 const SCHOOL_NAME = "Grambling State University";
 const CANVAS_DOMAIN = "grambling.instructure.com";
 
+// HTML escape to prevent XSS
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+}
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
@@ -383,8 +392,8 @@ function getAuthPage(redirectUri, state) {
     </div>
 
     <form action="/callback" method="POST">
-      <input type="hidden" name="redirect_uri" value="${redirectUri || ""}">
-      <input type="hidden" name="state" value="${state || ""}">
+      <input type="hidden" name="redirect_uri" value="${escapeHtml(redirectUri)}">
+      <input type="hidden" name="state" value="${escapeHtml(state)}">
 
       <label for="token">Access Token</label>
       <input
