@@ -112,6 +112,36 @@ export default {
       });
     }
 
+    // Proxy API requests to Canvas
+    if (url.pathname.startsWith("/api/v1/")) {
+      const authHeader = request.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      const canvasUrl = `https://${CANVAS_DOMAIN}${url.pathname}${url.search}`;
+      const canvasResponse = await fetch(canvasUrl, {
+        method: request.method,
+        headers: {
+          "Authorization": authHeader,
+          "Content-Type": request.headers.get("Content-Type") || "application/json",
+        },
+        body: request.method !== "GET" && request.method !== "HEAD" ? await request.text() : null,
+      });
+
+      const responseBody = await canvasResponse.text();
+      return new Response(responseBody, {
+        status: canvasResponse.status,
+        headers: {
+          "Content-Type": canvasResponse.headers.get("Content-Type") || "application/json",
+          ...corsHeaders,
+        },
+      });
+    }
+
     return new Response("Not found", { status: 404, headers: corsHeaders });
   }
 };
@@ -123,65 +153,74 @@ function getHomePage() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canvas GPT - ${SCHOOL_NAME}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/style.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      font-family: "Geist Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fff;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      color: #fff;
+      color: #000;
     }
     .container {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 500px;
+      max-width: 400px;
       width: 100%;
       text-align: center;
-      border: 1px solid rgba(255,255,255,0.2);
     }
-    h1 { margin-bottom: 10px; font-size: 28px; }
-    .school { color: #ffd700; margin-bottom: 20px; }
-    p { color: #ccc; line-height: 1.6; margin-bottom: 20px; }
-    .info-box {
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 20px;
-      text-align: left;
-      margin-top: 20px;
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
     }
-    .info-box h3 { margin-bottom: 10px; color: #ffd700; }
-    .info-box ol { padding-left: 20px; }
-    .info-box li { margin-bottom: 8px; color: #ddd; }
+    .school {
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+    p {
+      color: #333;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+    .note {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      font-size: 13px;
+      color: #999;
+    }
+    footer {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+    }
+    footer a {
+      color: #666;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎓 Canvas GPT</h1>
+    <h1>Canvas GPT</h1>
     <p class="school">${SCHOOL_NAME}</p>
-    <p>This service connects ChatGPT to your Canvas account.</p>
-    <p>To use it, open the Canvas GPT in ChatGPT and click "Sign in".</p>
-    
-    <div class="info-box">
-      <h3>How it works:</h3>
-      <ol>
-        <li>Open Canvas GPT in ChatGPT</li>
-        <li>Click "Sign in" when prompted</li>
-        <li>Paste your Canvas access token</li>
-        <li>Start managing your courses!</li>
-      </ol>
-    </div>
-    
-    <div class="info-box">
-      <h3>🔒 Privacy:</h3>
-      <p>Your token is sent directly to ChatGPT. This page does not store any data.</p>
-    </div>
+    <p>Connect ChatGPT to your Canvas account.</p>
+    <p>Open Canvas GPT in ChatGPT and click "Sign in" to get started.</p>
+    <p class="note">Your token is sent directly to ChatGPT. No data is stored.</p>
   </div>
+  <footer>Built with ❤️ by <a href="https://github.com/nintang/canvas-oauth" target="_blank">@nintang</a></footer>
 </body>
 </html>`;
 }
@@ -193,121 +232,194 @@ function getAuthPage(redirectUri, state) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connect to Canvas - ${SCHOOL_NAME}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/style.min.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      font-family: "Geist Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fafafa;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      color: #fff;
+      color: #000;
     }
     .container {
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
+      background: #fff;
+      border: 1px solid #eaeaea;
       padding: 40px;
-      max-width: 500px;
+      max-width: 420px;
       width: 100%;
-      border: 1px solid rgba(255,255,255,0.2);
     }
-    h1 { text-align: center; margin-bottom: 10px; font-size: 24px; }
-    .school { text-align: center; color: #ffd700; margin-bottom: 30px; }
-    label { display: block; margin-bottom: 8px; font-weight: 500; }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header svg {
+      margin-bottom: 16px;
+      color: #000;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .school {
+      color: #666;
+      font-size: 14px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      color: #333;
+    }
     input[type="password"] {
       width: 100%;
-      padding: 15px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 10px;
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      font-size: 16px;
-      margin-bottom: 20px;
+      padding: 12px;
+      border: 1px solid #eaeaea;
+      background: #fff;
+      color: #000;
+      font-size: 14px;
+      margin-bottom: 16px;
+      transition: border-color 0.15s;
     }
     input[type="password"]:focus {
       outline: none;
-      border-color: #ffd700;
+      border-color: #000;
     }
-    input[type="password"]::placeholder { color: #888; }
+    input[type="password"]::placeholder {
+      color: #999;
+    }
     button {
       width: 100%;
-      padding: 15px;
-      background: #ffd700;
-      color: #1a1a2e;
+      padding: 12px;
+      background: #000;
+      color: #fff;
       border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: background 0.15s;
     }
     button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+      background: #333;
     }
-    .help {
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 20px;
-      margin-top: 25px;
+    .divider {
+      margin: 32px 0;
+      border-top: 1px solid #eaeaea;
     }
-    .help h3 { margin-bottom: 12px; color: #ffd700; font-size: 16px; }
-    .help ol { padding-left: 20px; }
-    .help li { margin-bottom: 8px; color: #ccc; font-size: 14px; line-height: 1.5; }
-    .help a { color: #ffd700; }
-    .security {
-      margin-top: 20px;
-      padding: 15px;
-      background: rgba(0,255,0,0.1);
-      border-radius: 10px;
+    .help h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #000;
+    }
+    .help h3 svg {
+      width: 16px;
+      height: 16px;
+    }
+    .help ol {
+      padding-left: 20px;
+      margin: 0;
+    }
+    .help li {
+      margin-bottom: 8px;
+      color: #666;
       font-size: 13px;
-      color: #8f8;
+      line-height: 1.5;
+    }
+    .help a {
+      color: #000;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .help a:hover {
+      color: #666;
+    }
+    .security {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+    .security svg {
+      width: 14px;
+      height: 14px;
+    }
+    footer {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
       text-align: center;
+      font-size: 13px;
+      color: #999;
+    }
+    footer a {
+      color: #666;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🔐 Connect to Canvas</h1>
-    <p class="school">${SCHOOL_NAME}</p>
-    
+    <div class="header">
+      <i data-lucide="link" width="32" height="32" stroke-width="1.5"></i>
+      <h1>Connect to Canvas</h1>
+      <p class="school">${SCHOOL_NAME}</p>
+    </div>
+
     <form action="/callback" method="POST">
       <input type="hidden" name="redirect_uri" value="${redirectUri || ""}">
       <input type="hidden" name="state" value="${state || ""}">
-      
-      <label for="token">Canvas Access Token</label>
-      <input 
-        type="password" 
-        id="token" 
-        name="token" 
-        placeholder="Paste your token here" 
+
+      <label for="token">Access Token</label>
+      <input
+        type="password"
+        id="token"
+        name="token"
+        placeholder="Paste your Canvas token"
         required
         autocomplete="off"
       >
-      
-      <button type="submit">Connect to Canvas</button>
+
+      <button type="submit">Continue</button>
     </form>
-    
+
+    <div class="divider"></div>
+
     <div class="help">
-      <h3>📋 How to get your token:</h3>
+      <h3><i data-lucide="info"></i> How to get your token</h3>
       <ol>
         <li>Go to <a href="https://${CANVAS_DOMAIN}" target="_blank">${CANVAS_DOMAIN}</a></li>
-        <li>Click <strong>Account</strong> (left sidebar) → <strong>Settings</strong></li>
-        <li>Scroll to <strong>Approved Integrations</strong></li>
-        <li>Click <strong>+ New Access Token</strong></li>
-        <li>Enter purpose: <strong>ChatGPT</strong></li>
-        <li>Click <strong>Generate Token</strong></li>
-        <li>Copy the token and paste it above</li>
+        <li>Click Account in the left sidebar, then Settings</li>
+        <li>Scroll to Approved Integrations</li>
+        <li>Click + New Access Token</li>
+        <li>Enter purpose: ChatGPT</li>
+        <li>Click Generate Token and copy it</li>
       </ol>
     </div>
-    
+
     <div class="security">
-      🔒 Your token is sent directly to ChatGPT. This page does not store any data.
+      <i data-lucide="shield-check"></i>
+      <span>Your token is sent directly to ChatGPT. No data is stored.</span>
     </div>
   </div>
+  <footer>Developed with ❤️ by <a href="https://github.com/nintang/canvas-oauth" target="_blank">@nintang</a></footer>
+  <script>lucide.createIcons();</script>
 </body>
 </html>`;
 }

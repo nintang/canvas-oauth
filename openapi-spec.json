@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://grambling.instructure.com/api/v1"
+      "url": "https://canvas-oauth.nintang48.workers.dev/api/v1"
     }
   ],
   "security": [
@@ -21,8 +21,8 @@
         "type": "oauth2",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "https://canvas-oauth.YOUR_SUBDOMAIN.workers.dev/authorize",
-            "tokenUrl": "https://canvas-oauth.YOUR_SUBDOMAIN.workers.dev/token",
+            "authorizationUrl": "https://canvas-oauth.nintang48.workers.dev/authorize",
+            "tokenUrl": "https://canvas-oauth.nintang48.workers.dev/token",
             "scopes": {}
           }
         }
