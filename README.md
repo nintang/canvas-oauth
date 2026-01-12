@@ -1,4 +1,4 @@
-# Canvas GPT - Grambling State University
+# Proxy Server for Canvas GPT
 
 A ChatGPT GPT that connects to Canvas LMS using OAuth.
 
