@@ -1,0 +1,13 @@
+{
+  "name": "canvas-oauth",
+  "version": "1.0.0",
+  "description": "Simple OAuth bridge for Canvas GPT - connects ChatGPT to Canvas",
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

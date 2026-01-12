@@ -1,0 +1,844 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Canvas LMS API - Grambling State University",
+    "description": "Canvas LMS API for Grambling State University students",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://grambling.instructure.com/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "OAuth2": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://canvas-oauth.YOUR_SUBDOMAIN.workers.dev/authorize",
+            "tokenUrl": "https://canvas-oauth.YOUR_SUBDOMAIN.workers.dev/token",
+            "scopes": {}
+          }
+        }
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "sortable_name": { "type": "string" },
+          "short_name": { "type": "string" },
+          "login_id": { "type": "string" },
+          "avatar_url": { "type": "string" },
+          "email": { "type": "string" }
+        }
+      },
+      "Course": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "course_code": { "type": "string" },
+          "workflow_state": { "type": "string" },
+          "enrollments": { "type": "array", "items": { "$ref": "#/components/schemas/Enrollment" } }
+        }
+      },
+      "Enrollment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "course_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "type": { "type": "string" },
+          "computed_current_score": { "type": "number" },
+          "computed_final_score": { "type": "number" },
+          "computed_current_grade": { "type": "string" },
+          "computed_final_grade": { "type": "string" }
+        }
+      },
+      "Assignment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "due_at": { "type": "string", "format": "date-time" },
+          "points_possible": { "type": "number" },
+          "submission_types": { "type": "array", "items": { "type": "string" } },
+          "course_id": { "type": "integer" },
+          "html_url": { "type": "string" },
+          "has_submitted_submissions": { "type": "boolean" }
+        }
+      },
+      "Submission": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "assignment_id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "submitted_at": { "type": "string", "format": "date-time" },
+          "score": { "type": "number" },
+          "grade": { "type": "string" },
+          "workflow_state": { "type": "string" },
+          "late": { "type": "boolean" },
+          "missing": { "type": "boolean" }
+        }
+      },
+      "Module": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "position": { "type": "integer" },
+          "items_count": { "type": "integer" },
+          "state": { "type": "string" }
+        }
+      },
+      "ModuleItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "module_id": { "type": "integer" },
+          "title": { "type": "string" },
+          "type": { "type": "string" },
+          "html_url": { "type": "string" }
+        }
+      },
+      "Discussion": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "posted_at": { "type": "string", "format": "date-time" },
+          "discussion_subentry_count": { "type": "integer" }
+        }
+      },
+      "DiscussionEntry": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "message": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Announcement": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "posted_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CalendarEvent": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "start_at": { "type": "string", "format": "date-time" },
+          "end_at": { "type": "string", "format": "date-time" },
+          "location_name": { "type": "string" }
+        }
+      },
+      "File": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "display_name": { "type": "string" },
+          "filename": { "type": "string" },
+          "url": { "type": "string" },
+          "size": { "type": "integer" }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "properties": {
+          "page_id": { "type": "integer" },
+          "url": { "type": "string" },
+          "title": { "type": "string" },
+          "body": { "type": "string" }
+        }
+      },
+      "TodoItem": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "assignment": { "$ref": "#/components/schemas/Assignment" },
+          "course_id": { "type": "integer" },
+          "html_url": { "type": "string" }
+        }
+      },
+      "PlannerNote": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "details": { "type": "string" },
+          "todo_date": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Conversation": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "subject": { "type": "string" },
+          "last_message": { "type": "string" },
+          "last_message_at": { "type": "string", "format": "date-time" },
+          "message_count": { "type": "integer" }
+        }
+      },
+      "Quiz": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "quiz_type": { "type": "string" },
+          "time_limit": { "type": "integer" },
+          "allowed_attempts": { "type": "integer" },
+          "question_count": { "type": "integer" },
+          "points_possible": { "type": "number" },
+          "due_at": { "type": "string", "format": "date-time" },
+          "published": { "type": "boolean" },
+          "html_url": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/users/self": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "summary": "Get current user profile",
+        "tags": ["Users"],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
+          }
+        }
+      }
+    },
+    "/courses": {
+      "get": {
+        "operationId": "listCourses",
+        "summary": "List your courses",
+        "tags": ["Courses"],
+        "parameters": [
+          { "name": "enrollment_state", "in": "query", "schema": { "type": "string", "enum": ["active", "completed"] } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of courses",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Course" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}": {
+      "get": {
+        "operationId": "getCourse",
+        "summary": "Get a single course",
+        "tags": ["Courses"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course details",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Course" } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/assignments": {
+      "get": {
+        "operationId": "listAssignments",
+        "summary": "List assignments for a course",
+        "tags": ["Assignments"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "order_by", "in": "query", "schema": { "type": "string", "enum": ["position", "name", "due_at"] } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of assignments",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Assignment" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/assignments/{assignment_id}/submissions": {
+      "post": {
+        "operationId": "submitAssignment",
+        "summary": "Submit an assignment",
+        "tags": ["Submissions"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "assignment_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "submission": {
+                    "type": "object",
+                    "properties": {
+                      "submission_type": { "type": "string", "enum": ["online_text_entry", "online_url"] },
+                      "body": { "type": "string" },
+                      "url": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Submission created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Submission" } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/assignments/{assignment_id}/submissions/self": {
+      "get": {
+        "operationId": "getMySubmission",
+        "summary": "Get your submission for an assignment",
+        "tags": ["Submissions"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "assignment_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submission details",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Submission" } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/students/submissions": {
+      "get": {
+        "operationId": "listMySubmissions",
+        "summary": "List your submissions in a course",
+        "tags": ["Submissions"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "student_ids[]", "in": "query", "schema": { "type": "string", "default": "self" } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of submissions",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Submission" } } } }
+          }
+        }
+      }
+    },
+    "/users/self/missing_submissions": {
+      "get": {
+        "operationId": "getMissingSubmissions",
+        "summary": "Get missing submissions",
+        "tags": ["Submissions"],
+        "parameters": [
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of missing assignments",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Assignment" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/modules": {
+      "get": {
+        "operationId": "listModules",
+        "summary": "List modules in a course",
+        "tags": ["Modules"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of modules",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Module" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/modules/{module_id}/items": {
+      "get": {
+        "operationId": "listModuleItems",
+        "summary": "List items in a module",
+        "tags": ["Modules"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "module_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of module items",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ModuleItem" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/discussion_topics": {
+      "get": {
+        "operationId": "listDiscussions",
+        "summary": "List discussions in a course",
+        "tags": ["Discussions"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "order_by", "in": "query", "schema": { "type": "string", "enum": ["position", "recent_activity", "title"] } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of discussions",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Discussion" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/discussion_topics/{topic_id}/entries": {
+      "get": {
+        "operationId": "listDiscussionEntries",
+        "summary": "List discussion entries",
+        "tags": ["Discussions"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "topic_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of entries",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/DiscussionEntry" } } } }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postDiscussionEntry",
+        "summary": "Post a discussion entry",
+        "tags": ["Discussions"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "topic_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" }
+                },
+                "required": ["message"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DiscussionEntry" } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/discussion_topics/{topic_id}/entries/{entry_id}/replies": {
+      "post": {
+        "operationId": "replyToDiscussionEntry",
+        "summary": "Reply to a discussion entry",
+        "tags": ["Discussions"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "topic_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "entry_id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" }
+                },
+                "required": ["message"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reply created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DiscussionEntry" } } }
+          }
+        }
+      }
+    },
+    "/announcements": {
+      "get": {
+        "operationId": "listAnnouncements",
+        "summary": "List announcements",
+        "tags": ["Announcements"],
+        "parameters": [
+          { "name": "context_codes[]", "in": "query", "required": true, "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of announcements",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Announcement" } } } }
+          }
+        }
+      }
+    },
+    "/calendar_events": {
+      "get": {
+        "operationId": "listCalendarEvents",
+        "summary": "List calendar events",
+        "tags": ["Calendar"],
+        "parameters": [
+          { "name": "type", "in": "query", "schema": { "type": "string", "enum": ["event", "assignment"] } },
+          { "name": "start_date", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "end_date", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "context_codes[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of calendar events",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CalendarEvent" } } } }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCalendarEvent",
+        "summary": "Create a calendar event",
+        "tags": ["Calendar"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "calendar_event": {
+                    "type": "object",
+                    "properties": {
+                      "context_code": { "type": "string" },
+                      "title": { "type": "string" },
+                      "description": { "type": "string" },
+                      "start_at": { "type": "string", "format": "date-time" },
+                      "end_at": { "type": "string", "format": "date-time" },
+                      "location_name": { "type": "string" }
+                    },
+                    "required": ["context_code", "title", "start_at"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Event created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CalendarEvent" } } }
+          }
+        }
+      }
+    },
+    "/users/self/todo": {
+      "get": {
+        "operationId": "getTodoItems",
+        "summary": "Get your to-do items",
+        "tags": ["Todo"],
+        "parameters": [
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "To-do items",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/TodoItem" } } } }
+          }
+        }
+      }
+    },
+    "/users/self/upcoming_events": {
+      "get": {
+        "operationId": "getUpcomingEvents",
+        "summary": "Get upcoming events",
+        "tags": ["Calendar"],
+        "responses": {
+          "200": {
+            "description": "Upcoming events",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CalendarEvent" } } } }
+          }
+        }
+      }
+    },
+    "/planner_notes": {
+      "get": {
+        "operationId": "listPlannerNotes",
+        "summary": "List planner notes",
+        "tags": ["Planner"],
+        "parameters": [
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of planner notes",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/PlannerNote" } } } }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPlannerNote",
+        "summary": "Create a planner note",
+        "tags": ["Planner"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "details": { "type": "string" },
+                  "todo_date": { "type": "string", "format": "date-time" },
+                  "course_id": { "type": "integer" }
+                },
+                "required": ["title", "todo_date"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Planner note created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PlannerNote" } } }
+          }
+        }
+      }
+    },
+    "/conversations": {
+      "get": {
+        "operationId": "listConversations",
+        "summary": "List conversations",
+        "tags": ["Messages"],
+        "parameters": [
+          { "name": "scope", "in": "query", "schema": { "type": "string", "enum": ["inbox", "unread", "archived", "sent"] } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of conversations",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Conversation" } } } }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createConversation",
+        "summary": "Create a conversation (send message)",
+        "tags": ["Messages"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recipients[]": { "type": "array", "items": { "type": "string" } },
+                  "subject": { "type": "string" },
+                  "body": { "type": "string" },
+                  "context_code": { "type": "string" }
+                },
+                "required": ["recipients[]", "body"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conversation created",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Conversation" } } } }
+          }
+        }
+      }
+    },
+    "/conversations/{id}/add_message": {
+      "post": {
+        "operationId": "replyToConversation",
+        "summary": "Reply to a conversation",
+        "tags": ["Messages"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": { "type": "string" }
+                },
+                "required": ["body"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message added",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Conversation" } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/enrollments": {
+      "get": {
+        "operationId": "listEnrollments",
+        "summary": "List enrollments (get grades)",
+        "tags": ["Enrollments"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "user_id", "in": "query", "schema": { "type": "string", "default": "self" } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enrollments with grades",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Enrollment" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/files": {
+      "get": {
+        "operationId": "listCourseFiles",
+        "summary": "List files in a course",
+        "tags": ["Files"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "search_term", "in": "query", "schema": { "type": "string" } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of files",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/File" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/pages": {
+      "get": {
+        "operationId": "listPages",
+        "summary": "List pages in a course",
+        "tags": ["Pages"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "sort", "in": "query", "schema": { "type": "string", "enum": ["title", "created_at", "updated_at"] } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of pages",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Page" } } } }
+          }
+        }
+      }
+    },
+    "/search/recipients": {
+      "get": {
+        "operationId": "searchRecipients",
+        "summary": "Search for message recipients",
+        "tags": ["Search"],
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "context", "in": "query", "schema": { "type": "string" } },
+          { "name": "type", "in": "query", "schema": { "type": "string", "enum": ["user", "context"] } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of recipients",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "type": "object" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/users": {
+      "get": {
+        "operationId": "listCourseUsers",
+        "summary": "List users in a course",
+        "tags": ["Users"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "search_term", "in": "query", "schema": { "type": "string" } },
+          { "name": "enrollment_type[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "include[]", "in": "query", "schema": { "type": "array", "items": { "type": "string" } } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/User" } } } }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}/quizzes": {
+      "get": {
+        "operationId": "listQuizzes",
+        "summary": "List quizzes in a course",
+        "tags": ["Quizzes"],
+        "parameters": [
+          { "name": "course_id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "search_term", "in": "query", "schema": { "type": "string" } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of quizzes",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Quiz" } } } }
+          }
+        }
+      }
+    }
+  }
+}
