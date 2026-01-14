@@ -1,4 +1,4 @@
-# Proxy Server for Canvas GPT
+# Canvas GPT
 
 A ChatGPT GPT that connects to Canvas LMS using OAuth.
 
